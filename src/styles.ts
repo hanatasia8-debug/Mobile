@@ -246,3 +246,154 @@ const styleDefinitions = {
 } as const;
 
 export const styles = StyleSheet.create<typeof styleDefinitions>(styleDefinitions);
+
+const detailDefinitions = {
+  container: {
+    flex: 1,
+    backgroundColor: '#101217',
+  },
+  content: {
+    width: '100%',
+    maxWidth: 560,
+    alignSelf: 'center',
+    paddingHorizontal: 22,
+    paddingTop: 20,
+    paddingBottom: 36,
+  },
+  card: {
+    padding: 22,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#2D313A',
+    backgroundColor: '#191C23',
+  },
+  cardTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  category: {
+    overflow: 'hidden',
+    borderRadius: 20,
+    paddingHorizontal: 11,
+    paddingVertical: 5,
+    backgroundColor: '#292E25',
+    color: '#C6F58D',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  memberCount: {
+    color: '#A7ACB8',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  hobbyName: {
+    color: '#F5F6F2',
+    fontSize: 24,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+  },
+  description: {
+    marginTop: 8,
+    color: '#A7ACB8',
+    fontSize: 13,
+    lineHeight: 20,
+  },
+  detailSection: {
+    marginTop: 18,
+    paddingTop: 14,
+    borderTopColor: '#2A2E37',
+    borderTopWidth: 1,
+  },
+  detailLabel: {
+    color: '#858B98',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1.1,
+    marginBottom: 4,
+  },
+  detailValue: {
+    color: '#E5E7E1',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  joinButton: {
+    minHeight: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 24,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    backgroundColor: '#B9F36A',
+  },
+  joinButtonPressed: {
+    opacity: 0.78,
+  },
+  joinButtonText: {
+    color: '#19220D',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  joinButtonArrow: {
+    color: '#19220D',
+    fontSize: 18,
+  },
+  notFoundText: {
+    color: '#A7ACB8',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 40,
+  },
+  footerText: {
+    marginTop: 25,
+    color: '#656B77',
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 1.7,
+    textAlign: 'center',
+  },
+} as const;
+
+export const detailStyles = StyleSheet.create<typeof detailDefinitions>(detailDefinitions);
+
+const chipDefinitions = {
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  chip: {
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#30343D',
+    backgroundColor: '#191C23',
+  },
+  chipActive: {
+    borderColor: '#B9F36A',
+    backgroundColor: '#252A22',
+  },
+  chipText: {
+    color: '#A7ACB8',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  chipTextActive: {
+    color: '#C6F58D',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    color: '#858B98',
+    fontSize: 13,
+    textAlign: 'center',
+  },
+} as const;
+
+export const chipStyles = StyleSheet.create<typeof chipDefinitions>(chipDefinitions);
