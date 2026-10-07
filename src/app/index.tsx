@@ -1,70 +1,42 @@
+import { useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { router } from 'expo-router';
 
-import { styles } from '../styles';
+import { categoryOptions, hobbies, type HobbyCategory } from '@/data/hobbies';
 
-type HobbyCategory = 'Olahraga' | 'Gaming' | 'Kuliner' | 'Seni';
+import { chipStyles, styles } from '../styles';
 
-interface HobbyData {
-  id: string;
-  name: string;
-  description: string;
-  category: HobbyCategory;
-  location: string;
-  time: string;
-  members: number;
-}
-
-const hobbies: HobbyData[] = [
-  {
-    id: 'basket',
-    name: 'Basket sore',
-    description: 'Cari teman untuk main santai, semua level boleh ikut.',
-    category: 'Olahraga',
-    location: 'Lapangan Kampus A',
-    time: 'Hari ini, 16.30',
-    members: 4,
-  },
-  {
-    id: 'boardgame',
-    name: 'Board game night',
-    description: 'Ngobrol dan main board game bareng setelah kelas.',
-    category: 'Gaming',
-    location: 'Student Lounge',
-    time: 'Hari ini, 19.00',
-    members: 3,
-  },
-  {
-    id: 'coffee',
-    name: 'Jajan kopi keliling',
-    description: 'Jelajahi kedai kopi baru di sekitar kampus.',
-    category: 'Kuliner',
-    location: 'Gerbang Utama',
-    time: 'Besok, 10.00',
-    members: 2,
-  },
-  {
-    id: 'sketch',
-    name: 'Sketch & chill',
-    description: 'Bawa sketchbook, gambar bebas sambil bertukar ide.',
-    category: 'Seni',
-    location: 'Taman Fakultas',
-    time: 'Besok, 15.30',
-    members: 5,
-  },
-];
+type FilterOption = HobbyCategory | 'Semua';
 
 function showHobbyAlert(hobbyName: string) {
   Alert.alert('GatherIn', `Kamu memilih kegiatan ${hobbyName}. Sampai jumpa!`);
 }
 
+function openDetail(id: string) {
+  router.push({ pathname: '/detail', params: { id } });
+}
+
 export default function HomeScreen() {
+  const [activeCategory, setActiveCategory] = useState<FilterOption>('Semua');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const visibleHobbies = hobbies.filter((hobby) => {
+    const matchCategory =
+      activeCategory === 'Semua' || hobby.category === activeCategory;
+    const query = searchQuery.trim().toLowerCase();
+    const matchSearch =
+      query === '' ||
+      hobby.name.toLowerCase().includes(query) ||
+      hobby.description.toLowerCase().includes(query);
+    return matchCategory && matchSearch;
+  });
+
   return (
     <View style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
+        keyboardShouldPersistTaps="handled">
         <View style={styles.topBar}>
           <View style={styles.brandMark}>
             <Text style={styles.brandMarkText}>G</Text>
@@ -85,7 +57,9 @@ export default function HomeScreen() {
           </Text>
           <View style={styles.heroFooter}>
             <View style={styles.onlineDot} />
-            <Text style={styles.heroFooterText}>12 kegiatan terbuka di sekitarmu</Text>
+            <Text style={styles.heroFooterText}>
+              {visibleHobbies.length} kegiatan terbuka di sekitarmu
+            </Text>
           </View>
         </View>
 
@@ -96,7 +70,26 @@ export default function HomeScreen() {
             placeholder="Cari hobi atau kegiatan..."
             placeholderTextColor="#78808F"
             returnKeyType="search"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
           />
+        </View>
+
+        <View style={chipStyles.chipRow}>
+          {categoryOptions.map((option) => {
+            const isActive = option === activeCategory;
+            return (
+              <Pressable
+                key={option}
+                accessibilityRole="button"
+                onPress={() => setActiveCategory(option)}
+                style={[chipStyles.chip, isActive && chipStyles.chipActive]}>
+                <Text style={[chipStyles.chipText, isActive && chipStyles.chipTextActive]}>
+                  {option}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
 
         <View style={styles.listHeader}>
@@ -107,37 +100,43 @@ export default function HomeScreen() {
           <Text style={styles.todayLabel}>UNTUKMU</Text>
         </View>
 
-        <View style={styles.hobbyList}>
-          {hobbies.map((hobby) => (
-            <View key={hobby.id} style={styles.hobbyCard}>
-              <View style={styles.cardTopRow}>
-                <Text style={styles.category}>{hobby.category}</Text>
-                <Text style={styles.memberCount}>{hobby.members} ikut</Text>
+        {visibleHobbies.length === 0 ? (
+          <View style={chipStyles.emptyState}>
+            <Text style={chipStyles.emptyText}>
+              Belum ada kegiatan yang cocok.{'\n'}Coba kata kunci atau kategori lain.
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.hobbyList}>
+            {visibleHobbies.map((hobby) => (
+              <View key={hobby.id} style={styles.hobbyCard}>
+                <View style={styles.cardTopRow}>
+                  <Text style={styles.category}>{hobby.category}</Text>
+                  <Text style={styles.memberCount}>{hobby.members} ikut</Text>
+                </View>
+                <Text style={styles.hobbyName}>{hobby.name}</Text>
+                <Text style={styles.description}>{hobby.description}</Text>
+                <View style={styles.activityDetails}>
+                  <Text style={styles.detailText}>{hobby.time}</Text>
+                  <Text style={styles.detailSeparator}>·</Text>
+                  <Text style={styles.detailText}>{hobby.location}</Text>
+                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => openDetail(hobby.id)}
+                  style={({ pressed }) => [styles.joinButton, pressed && styles.joinButtonPressed]}>
+                  <Text style={styles.joinButtonText}>Lihat kegiatan</Text>
+                  <Text style={styles.joinButtonArrow}>↗</Text>
+                </Pressable>
               </View>
-              <Text style={styles.hobbyName}>{hobby.name}</Text>
-              <Text style={styles.description}>{hobby.description}</Text>
-              <View style={styles.activityDetails}>
-                <Text style={styles.detailText}>{hobby.time}</Text>
-                <Text style={styles.detailSeparator}>·</Text>
-                <Text style={styles.detailText}>{hobby.location}</Text>
-              </View>
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => showHobbyAlert(hobby.name)}
-                style={({ pressed }) => [styles.joinButton, pressed && styles.joinButtonPressed]}
-              >
-                <Text style={styles.joinButtonText}>Lihat kegiatan</Text>
-                <Text style={styles.joinButtonArrow}>↗</Text>
-              </Pressable>
-            </View>
-          ))}
-        </View>
+            ))}
+          </View>
+        )}
 
         <Pressable
           accessibilityRole="button"
           onPress={() => showHobbyAlert('kegiatan baru')}
-          style={({ pressed }) => [styles.createButton, pressed && styles.createButtonPressed]}
-        >
+          style={({ pressed }) => [styles.createButton, pressed && styles.createButtonPressed]}>
           <Text style={styles.createButtonText}>＋  Buat ajakan kumpul</Text>
         </Pressable>
 
