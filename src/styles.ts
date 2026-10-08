@@ -266,6 +266,17 @@ const detailDefinitions = {
     borderWidth: 1,
     borderColor: '#2D313A',
     backgroundColor: '#191C23',
+    alignItems: 'center',
+  },
+  hobbyImageWrap: {
+    marginBottom: 16,
+  },
+  hobbyImage: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 2,
+    borderColor: '#2D313A',
   },
   cardTopRow: {
     flexDirection: 'row',
