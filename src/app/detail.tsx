@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import { hobbies } from '@/data/hobbies';
@@ -23,6 +24,14 @@ export default function DetailScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
+          <View style={styles.hobbyImageWrap}>
+            <Image
+              source={hobby.image}
+              style={styles.hobbyImage}
+              contentFit="cover"
+            />
+          </View>
+
           <View style={styles.cardTopRow}>
             <Text style={styles.category}>{hobby.category}</Text>
             <Text style={styles.memberCount}>{hobby.members} ikut</Text>
@@ -57,7 +66,13 @@ export default function DetailScreen() {
             accessibilityRole="button"
             style={({ pressed }) => [styles.joinButton, pressed && styles.joinButtonPressed]}>
             <Text style={styles.joinButtonText}>Gabung kegiatan</Text>
-            <Text style={styles.joinButtonArrow}>↗</Text>
+            <Text style={styles.joinButtonArrow}>↗️</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            style={({ pressed }) => [styles.joinButton, pressed && styles.joinButtonPressed]}>
+            <Text style={styles.joinButtonText}>Lihat Anggota</Text>
+            <Text style={styles.joinButtonArrow}>↗️</Text>
           </Pressable>
         </View>
 
