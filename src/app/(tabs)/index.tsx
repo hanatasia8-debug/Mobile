@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 
 import { categoryOptions, hobbies, type HobbyCategory } from '@/data/hobbies';
 
-import { chipStyles, styles } from '../styles';
+import { chipStyles, styles } from '../../styles';
 
 type FilterOption = HobbyCategory | 'Semua';
 
