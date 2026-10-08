@@ -2,11 +2,20 @@ import { useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 
-import { categoryOptions, hobbies, type HobbyCategory } from '@/data/hobbies';
+import { categoryOptions, hobbies, type HobbyCategory, type HobbyData } from '@/data/hobbies';
 
 import { chipStyles, styles } from '../styles';
 
 type FilterOption = HobbyCategory | 'Semua';
+
+// Custom function dengan primitive loop (for) sesuai Modul 1 Hal. 38-39
+function countTotalMembers(data: HobbyData[]): number {
+  let total = 0;
+  for (let i = 0; i < data.length; i++) {
+    total += data[i].members;
+  }
+  return total;
+}
 
 function showHobbyAlert(hobbyName: string) {
   Alert.alert('GatherIn', `Kamu memilih kegiatan ${hobbyName}. Sampai jumpa!`);
@@ -48,6 +57,10 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.hero}>
+          {/* Inline Styling sesuai Modul 1 Bab 3.3 (Hal. 18-19) */}
+          <Text style={{ fontSize: 11, color: '#B9F36A', fontWeight: '800', letterSpacing: 1.5, marginBottom: 8 }}>
+            ● KOMUNITAS MAHASISWA AKTIF
+          </Text>
           <Text style={styles.eyebrow}>TEMAN BARU, CERITA BARU</Text>
           <Text style={styles.title}>
             Rencana seru{'\n'}dimulai <Text style={styles.titleAccent}>di sini.</Text>
@@ -58,7 +71,7 @@ export default function HomeScreen() {
           <View style={styles.heroFooter}>
             <View style={styles.onlineDot} />
             <Text style={styles.heroFooterText}>
-              {visibleHobbies.length} kegiatan terbuka di sekitarmu
+              {visibleHobbies.length} kegiatan terbuka · {countTotalMembers(visibleHobbies)} peserta ikut
             </Text>
           </View>
         </View>
@@ -141,6 +154,10 @@ export default function HomeScreen() {
         </Pressable>
 
         <Text style={styles.footerText}>KETEMU DI GATHERIN ✦</Text>
+        {/* Inline Styling sesuai Modul 1 Bab 3.3 (Hal. 18) */}
+        <Text style={{ fontSize: 10, color: '#656B77', textAlign: 'center', marginTop: 4 }}>
+          GatherIn • Modul 1 Praktikum Pemrograman Mobile
+        </Text>
       </ScrollView>
     </View>
   );

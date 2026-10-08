@@ -46,6 +46,13 @@ export default function DetailScreen() {
             <Text style={styles.detailValue}>{hobby.members} orang terdaftar</Text>
           </View>
 
+          {/* Inline Styling sesuai Modul 1 Bab 3.3 (Hal. 18) */}
+          <View style={{ marginTop: 16, paddingVertical: 6, paddingHorizontal: 12, backgroundColor: '#21262D', borderRadius: 8, alignSelf: 'flex-start' }}>
+            <Text style={{ color: '#B9F36A', fontSize: 11, fontWeight: '600' }}>
+              ● Terbuka untuk mahasiswa
+            </Text>
+          </View>
+
           <Pressable
             accessibilityRole="button"
             style={({ pressed }) => [styles.joinButton, pressed && styles.joinButtonPressed]}>
