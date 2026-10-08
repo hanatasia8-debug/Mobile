@@ -1,3 +1,5 @@
+import type { ImageSource } from 'expo-image';
+
 export type HobbyCategory = 'Olahraga' | 'Gaming' | 'Kuliner' | 'Seni';
 
 export interface HobbyData {
@@ -8,6 +10,7 @@ export interface HobbyData {
   location: string;
   time: string;
   members: number;
+  image: ImageSource;
 }
 
 export const hobbies: HobbyData[] = [
@@ -19,6 +22,7 @@ export const hobbies: HobbyData[] = [
     location: 'Lapangan Kampus A',
     time: 'Hari ini, 16.30',
     members: 4,
+    image: require('@/assets/images/react-logo.png'),
   },
   {
     id: 'boardgame',
@@ -28,6 +32,7 @@ export const hobbies: HobbyData[] = [
     location: 'Student Lounge',
     time: 'Hari ini, 19.00',
     members: 3,
+    image: require('@/assets/images/expo-logo.png'),
   },
   {
     id: 'coffee',
@@ -37,6 +42,7 @@ export const hobbies: HobbyData[] = [
     location: 'Gerbang Utama',
     time: 'Besok, 10.00',
     members: 2,
+    image: require('@/assets/images/tutorial-web.png'),
   },
   {
     id: 'sketch',
@@ -46,6 +52,7 @@ export const hobbies: HobbyData[] = [
     location: 'Taman Fakultas',
     time: 'Besok, 15.30',
     members: 5,
+    image: require('@/assets/images/expo-badge.png'),
   },
 ];
 
