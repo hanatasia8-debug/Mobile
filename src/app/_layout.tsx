@@ -1,18 +1,48 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
-
-SplashScreen.preventAutoHideAsync();
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+/**
+ * Root Layout untuk Stack Navigator sesuai Modul 2 Praktikum Pemrograman Mobile
+ * Mengelola tumpukan layar (navigation stack) menggunakan <Stack> dan <Stack.Screen>
+ */
+export default function RootLayout() {
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <>
+      <StatusBar style="light" />
+      <Stack
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: '#161B22',
+          },
+          headerTintColor: '#F0F6FC',
+          headerTitleStyle: {
+            fontWeight: '700',
+            fontSize: 18,
+          },
+          headerShadowVisible: false,
+          contentStyle: {
+            backgroundColor: '#0D1117',
+          },
+        }}>
+        {/* Halaman Utama (Home Screen) */}
+        <Stack.Screen
+          name="index"
+          options={{
+            title: 'GatherIn',
+            headerShown: true,
+          }}
+        />
+
+        {/* Dynamic Route: Halaman Detail Kegiatan */}
+        <Stack.Screen
+          name="detail/[id]"
+          options={{
+            title: 'Detail Kegiatan',
+            headerShown: true,
+            headerBackTitle: 'Kembali',
+          }}
+        />
+      </Stack>
+    </>
   );
 }

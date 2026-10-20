@@ -1,44 +1,116 @@
-import { useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
+import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
-import { categoryOptions, hobbies, type HobbyCategory, type HobbyData } from '@/data/hobbies';
-
-import { chipStyles, styles } from '../styles';
+import {
+  categoryOptions,
+  hobbies,
+  type HobbyCategory,
+  type HobbyData,
+} from '@/data/hobbies';
+import { chipStyles, styles } from '@/styles';
 
 type FilterOption = HobbyCategory | 'Semua';
 
-// Custom function dengan primitive loop (for) sesuai Modul 1 Hal. 38-39
-function countTotalMembers(data: HobbyData[]): number {
-  let total = 0;
-  for (let i = 0; i < data.length; i++) {
-    total += data[i].members;
-  }
-  return total;
-}
-
-function showHobbyAlert(hobbyName: string) {
-  Alert.alert('GatherIn', `Kamu memilih kegiatan ${hobbyName}. Sampai jumpa!`);
-}
-
-function openDetail(id: string) {
-  router.push({ pathname: '/detail', params: { id } });
-}
-
+/**
+ * Halaman Utama (Home Screen): src/app/index.tsx
+ * Memenuhi kriteria Modul 2:
+ * 1. Manajemen State & Hooks:
+ *    - useState untuk filter pencarian (searchQuery).
+ *    - useState untuk status filter kategori (selectedCategory).
+ *    - useState untuk melacak data kegiatan & tombol gabung (sisa slot berkurang & status Joined).
+ *    - useEffect untuk sinkronisasi / side-effect hasil pencarian.
+ *    - useMemo untuk efisiensi perhitungan filtering.
+ * 2. Navigasi Berbasis File & Programmatic Navigation:
+ *    - router.push() membawa parameter dinamis (id, name, kategori, waktu, lokasi, dsb.)
+ *      menuju Dynamic Route /detail/[id].
+ */
 export default function HomeScreen() {
-  const [activeCategory, setActiveCategory] = useState<FilterOption>('Semua');
-  const [searchQuery, setSearchQuery] = useState('');
+  // State untuk melacak daftar kegiatan secara dinamis (kuota & status gabung)
+  const [activityList, setActivityList] = useState<HobbyData[]>(hobbies);
 
-  const visibleHobbies = hobbies.filter((hobby) => {
-    const matchCategory =
-      activeCategory === 'Semua' || hobby.category === activeCategory;
-    const query = searchQuery.trim().toLowerCase();
-    const matchSearch =
-      query === '' ||
-      hobby.name.toLowerCase().includes(query) ||
-      hobby.description.toLowerCase().includes(query);
-    return matchCategory && matchSearch;
-  });
+  // State untuk mengelola filter pencarian (Search Filter)
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // State untuk kategori aktif
+  const [selectedCategory, setSelectedCategory] = useState<FilterOption>('Semua');
+
+  // Hook useEffect untuk melacak interaksi pencarian (Side-Effect sesuai Modul 2 Bab 2.2)
+  useEffect(() => {
+    if (searchQuery.trim().length > 0) {
+      console.log(`[GatherIn Log] Melakukan pencarian kegiatan: "${searchQuery}"`);
+    }
+  }, [searchQuery]);
+
+  // Hook useMemo (Modul 2 Bab 2.5) untuk mengoptimasi performa pemfilteran kegiatan
+  const filteredActivities = useMemo(() => {
+    return activityList.filter((item) => {
+      const matchCategory =
+        selectedCategory === 'Semua' || item.category === selectedCategory;
+      const query = searchQuery.trim().toLowerCase();
+      const matchSearch =
+        query === '' ||
+        item.name.toLowerCase().includes(query) ||
+        item.description.toLowerCase().includes(query) ||
+        item.location.toLowerCase().includes(query);
+
+      return matchCategory && matchSearch;
+    });
+  }, [activityList, selectedCategory, searchQuery]);
+
+  // Hitung total peserta yang aktif bergabung
+  const totalActiveParticipants = useMemo(() => {
+    return activityList.reduce((acc, curr) => acc + curr.members, 0);
+  }, [activityList]);
+
+  // Fungsi navigasi programmatic menggunakan router.push() mengirim parameter dinamis
+  const handleNavigateToDetail = (activity: HobbyData) => {
+    router.push({
+      pathname: '/detail/[id]',
+      params: {
+        id: activity.id,
+        name: activity.name,
+        category: activity.category,
+        description: activity.description,
+        location: activity.location,
+        time: activity.time,
+        members: String(activity.members),
+        maxMembers: String(activity.maxMembers),
+        host: activity.host,
+        isJoined: activity.isJoined ? 'true' : 'false',
+      },
+    });
+  };
+
+  // Handler gabung kegiatan langsung dari kartu (Mengurangi slot & mengubah status jadi Joined)
+  const handleQuickJoin = (activityId: string) => {
+    setActivityList((prevList) =>
+      prevList.map((item) => {
+        if (item.id === activityId) {
+          if (item.isJoined) {
+            Alert.alert('Info', `Kamu sudah terdaftar di kegiatan ${item.name}!`);
+            return item;
+          }
+          if (item.members >= item.maxMembers) {
+            Alert.alert('Peringatan', 'Maaf, kuota kegiatan ini sudah penuh!');
+            return item;
+          }
+
+          Alert.alert(
+            'Berhasil Bergabung! 🎉',
+            `Kamu berhasil bergabung dengan "${item.name}". Sisa slot berkurang.`
+          );
+
+          return {
+            ...item,
+            members: item.members + 1,
+            isJoined: true,
+          };
+        }
+        return item;
+      })
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -46,58 +118,64 @@ export default function HomeScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled">
+        {/* Top Header Bar */}
         <View style={styles.topBar}>
           <View style={styles.brandMark}>
             <Text style={styles.brandMarkText}>G</Text>
           </View>
           <Text style={styles.brandName}>GatherIn</Text>
           <View style={styles.locationBadge}>
-            <Text style={styles.locationBadgeText}>KAMPUS</Text>
+            <Text style={styles.locationBadgeText}>KAMPUS UMM</Text>
           </View>
         </View>
 
+        {/* Hero Section */}
         <View style={styles.hero}>
-          {/* Inline Styling sesuai Modul 1 Bab 3.3 (Hal. 18-19) */}
-          <Text style={{ fontSize: 11, color: '#B9F36A', fontWeight: '800', letterSpacing: 1.5, marginBottom: 8 }}>
-            ● KOMUNITAS MAHASISWA AKTIF
-          </Text>
-          <Text style={styles.eyebrow}>TEMAN BARU, CERITA BARU</Text>
+          <Text style={styles.heroTag}>● MODUL 2: STATE & ROUTING</Text>
+          <Text style={styles.eyebrow}>KOMUNITAS MAHASISWA SPONTAN</Text>
           <Text style={styles.title}>
-            Rencana seru{'\n'}dimulai <Text style={styles.titleAccent}>di sini.</Text>
+            Cari Teman Kumpul{'\n'}
+            <Text style={styles.titleAccent}>Sesuai Hobimu.</Text>
           </Text>
           <Text style={styles.subtitle}>
-            Temukan teman untuk kumpul dan melakukan hal yang kamu suka.
+            Temukan teman main, olahraga, mabar, dan nongkrong secara spontan di lingkungan kampus.
           </Text>
           <View style={styles.heroFooter}>
             <View style={styles.onlineDot} />
             <Text style={styles.heroFooterText}>
-              {visibleHobbies.length} kegiatan terbuka · {countTotalMembers(visibleHobbies)} peserta ikut
+              {filteredActivities.length} kegiatan aktif · {totalActiveParticipants} mahasiswa bergabung
             </Text>
           </View>
         </View>
 
+        {/* Search Bar Section (Input State) */}
         <View style={styles.searchSection}>
-          <Text style={styles.sectionLabel}>MAU NGAPAIN HARI INI?</Text>
+          <Text style={styles.sectionLabel}>CARI KEGIATAN MAHASISWA</Text>
           <TextInput
             style={styles.input}
-            placeholder="Cari hobi atau kegiatan..."
-            placeholderTextColor="#78808F"
+            placeholder="Cari nama hobi, lokasi, atau deskripsi..."
+            placeholderTextColor="#8B949E"
             returnKeyType="search"
             value={searchQuery}
-            onChangeText={setSearchQuery}
+            onChangeText={(text) => setSearchQuery(text)}
           />
         </View>
 
+        {/* Filter Kategori (Chips) */}
         <View style={chipStyles.chipRow}>
           {categoryOptions.map((option) => {
-            const isActive = option === activeCategory;
+            const isActive = option === selectedCategory;
             return (
               <Pressable
                 key={option}
                 accessibilityRole="button"
-                onPress={() => setActiveCategory(option)}
+                onPress={() => setSelectedCategory(option)}
                 style={[chipStyles.chip, isActive && chipStyles.chipActive]}>
-                <Text style={[chipStyles.chipText, isActive && chipStyles.chipTextActive]}>
+                <Text
+                  style={[
+                    chipStyles.chipText,
+                    isActive && chipStyles.chipTextActive,
+                  ]}>
                   {option}
                 </Text>
               </Pressable>
@@ -105,58 +183,115 @@ export default function HomeScreen() {
           })}
         </View>
 
+        {/* Daftar Kegiatan (Activity List) */}
         <View style={styles.listHeader}>
           <View>
-            <Text style={styles.sectionTitle}>Lagi ramai</Text>
-            <Text style={styles.sectionSubtitle}>Kegiatan spontan dari teman kampus</Text>
+            <Text style={styles.sectionTitle}>Ajakan Kumpul Hari Ini</Text>
+            <Text style={styles.sectionSubtitle}>Pilih kegiatan dan amankan slotmu</Text>
           </View>
-          <Text style={styles.todayLabel}>UNTUKMU</Text>
+          <Text style={styles.todayLabel}>LIVE SPONTAN</Text>
         </View>
 
-        {visibleHobbies.length === 0 ? (
+        {filteredActivities.length === 0 ? (
           <View style={chipStyles.emptyState}>
             <Text style={chipStyles.emptyText}>
-              Belum ada kegiatan yang cocok.{'\n'}Coba kata kunci atau kategori lain.
+              Tidak ada kegiatan yang sesuai dengan &quot;{searchQuery}&quot;.{'\n'}
+              Coba kata kunci atau filter kategori lainnya.
             </Text>
           </View>
         ) : (
           <View style={styles.hobbyList}>
-            {visibleHobbies.map((hobby) => (
-              <View key={hobby.id} style={styles.hobbyCard}>
-                <View style={styles.cardTopRow}>
-                  <Text style={styles.category}>{hobby.category}</Text>
-                  <Text style={styles.memberCount}>{hobby.members} ikut</Text>
+            {filteredActivities.map((activity) => {
+              const remainingSlots = Math.max(
+                0,
+                activity.maxMembers - activity.members
+              );
+
+              return (
+                <View key={activity.id} style={styles.hobbyCard}>
+                  {/* Bagian Atas Kartu */}
+                  <View style={styles.cardTopRow}>
+                    <Text style={styles.category}>{activity.category}</Text>
+                    <View style={styles.slotBadge}>
+                      <Text style={styles.slotBadgeText}>
+                        {remainingSlots > 0
+                          ? `Sisa ${remainingSlots} Slot`
+                          : 'Slot Penuh'}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Judul & Deskripsi */}
+                  <Text style={styles.hobbyName}>{activity.name}</Text>
+                  <Text style={styles.description}>{activity.description}</Text>
+
+                  {/* Info Waktu & Lokasi */}
+                  <View style={styles.activityDetails}>
+                    <Text style={styles.detailText}>🕒 {activity.time}</Text>
+                    <Text style={styles.detailSeparator}>•</Text>
+                    <Text style={styles.detailText}>📍 {activity.location}</Text>
+                  </View>
+
+                  {/* Tombol Aksi: Navigasi Programmatic & Quick Join */}
+                  <View style={styles.cardActionRow}>
+                    <Pressable
+                      accessibilityRole="button"
+                      onPress={() => handleNavigateToDetail(activity)}
+                      style={({ pressed }) => [
+                        styles.joinButton,
+                        pressed && styles.joinButtonPressed,
+                      ]}>
+                      <Text style={styles.joinButtonText}>Detail Kegiatan</Text>
+                      <Text style={styles.joinButtonArrow}>↗</Text>
+                    </Pressable>
+
+                    <Pressable
+                      accessibilityRole="button"
+                      onPress={() => handleQuickJoin(activity.id)}
+                      disabled={activity.isJoined || remainingSlots <= 0}
+                      style={({ pressed }) => [
+                        styles.quickJoinBtn,
+                        activity.isJoined && styles.quickJoinBtnJoined,
+                        pressed && styles.quickJoinBtnPressed,
+                      ]}>
+                      <Text
+                        style={[
+                          styles.quickJoinBtnText,
+                          activity.isJoined && styles.quickJoinBtnJoinedText,
+                        ]}>
+                        {activity.isJoined
+                          ? 'Joined ✓'
+                          : remainingSlots <= 0
+                          ? 'Penuh'
+                          : '+ Gabung'}
+                      </Text>
+                    </Pressable>
+                  </View>
                 </View>
-                <Text style={styles.hobbyName}>{hobby.name}</Text>
-                <Text style={styles.description}>{hobby.description}</Text>
-                <View style={styles.activityDetails}>
-                  <Text style={styles.detailText}>{hobby.time}</Text>
-                  <Text style={styles.detailSeparator}>·</Text>
-                  <Text style={styles.detailText}>{hobby.location}</Text>
-                </View>
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => openDetail(hobby.id)}
-                  style={({ pressed }) => [styles.joinButton, pressed && styles.joinButtonPressed]}>
-                  <Text style={styles.joinButtonText}>Lihat kegiatan</Text>
-                  <Text style={styles.joinButtonArrow}>↗</Text>
-                </Pressable>
-              </View>
-            ))}
+              );
+            })}
           </View>
         )}
 
+        {/* Tombol Buat Ajakan */}
         <Pressable
           accessibilityRole="button"
-          onPress={() => showHobbyAlert('kegiatan baru')}
-          style={({ pressed }) => [styles.createButton, pressed && styles.createButtonPressed]}>
-          <Text style={styles.createButtonText}>＋  Buat ajakan kumpul</Text>
+          onPress={() =>
+            Alert.alert(
+              'Fitur Mendatang',
+              'Form pembuatan ajakan kegiatan baru akan hadir pada modul berikutnya.'
+            )
+          }
+          style={({ pressed }) => [
+            styles.createButton,
+            pressed && styles.createButtonPressed,
+          ]}>
+          <Text style={styles.createButtonText}>＋ Buat Ajakan Kumpul Baru</Text>
         </Pressable>
 
         <Text style={styles.footerText}>KETEMU DI GATHERIN ✦</Text>
-        {/* Inline Styling sesuai Modul 1 Bab 3.3 (Hal. 18) */}
-        <Text style={{ fontSize: 10, color: '#656B77', textAlign: 'center', marginTop: 4 }}>
-          GatherIn • Modul 1 Praktikum Pemrograman Mobile
+        <Text style={styles.footerSubtext}>
+          Laboratorium Informatika • Praktikum Pemrograman Mobile
         </Text>
       </ScrollView>
     </View>
