@@ -2,8 +2,8 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
 /**
- * Root Layout untuk Stack Navigator sesuai Modul 2 Praktikum Pemrograman Mobile
- * Mengelola tumpukan layar (navigation stack) menggunakan <Stack> dan <Stack.Screen>
+ * Root Layout untuk Stack Navigator
+ * Modul 3: Pemrograman Asynchronous & API Call (GatherIn)
  */
 export default function RootLayout() {
   return (
@@ -40,6 +40,26 @@ export default function RootLayout() {
             title: 'Detail Kegiatan',
             headerShown: true,
             headerBackTitle: 'Kembali',
+          }}
+        />
+
+        {/* Halaman Favorit (Modul 3 Bab 3 item 15) */}
+        <Stack.Screen
+          name="favorites"
+          options={{
+            title: 'Kegiatan Favorit',
+            headerShown: true,
+            headerBackTitle: 'Beranda',
+          }}
+        />
+
+        {/* Halaman Pencarian Kegiatan (Modul 3 Bab 3 item 13) */}
+        <Stack.Screen
+          name="search"
+          options={{
+            title: 'Pencarian Kegiatan',
+            headerShown: true,
+            headerBackTitle: 'Beranda',
           }}
         />
       </Stack>

@@ -1,84 +1,126 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 
-import { type DetailScreenParams } from '@/data/hobbies';
-import { detailStyles as styles } from '@/styles';
+import { joinActivityWithPromise } from '@/services/activityService';
+import { isFavorite as checkIsFavorite, toggleFavorite } from '@/services/favoriteService';
+import { detailStyles as styles, PALETTE } from '@/styles';
+import { type DetailScreenParams, type HobbyCategory, type HobbyData } from '@/types/activity';
 
 /**
- * Halaman Detail Dinamis: src/app/detail/[id].tsx
- * Menggunakan Dynamic Route [id] untuk menangkap parameter URL
- * Memenuhi kriteria:
- * - useLocalSearchParams untuk menangkap parameter dinamis (id, name, dsb.)
- * - useState untuk melacak status "Joined" dan pengurangan sisa kuota slot
- * - useEffect untuk efek samping (lifecycle / sinkronisasi log perubahan status)
- * - router.back() dan router.canGoBack() untuk navigasi kembali yang aman
+ * Halaman Detail Kegiatan: src/app/detail/[id].tsx
+ * Sesuai Modul 3: Pemrograman Asynchronous & API Call
+ * 
+ * Menerapkan:
+ * 1. Async Promise join validation (.then(), .resolve(), .reject())
+ * 2. Pre-built async storage untuk tracking favorite (AsyncStorage)
+ * 3. Asynchronous loading state saat memproses transaksi
  */
 export default function DetailActivityScreen() {
-  // 1. Menangkap parameter dari URL / router.push menggunakan useLocalSearchParams
   const params = useLocalSearchParams<'/detail/[id]'>() as DetailScreenParams;
 
-  // 2. State untuk melacak status bergabung (Joined)
+  // State status bergabung
   const [isJoined, setIsJoined] = useState<boolean>(params.isJoined === 'true');
 
-  // 3. State untuk melacak jumlah peserta saat ini secara dinamis
+  // State jumlah anggota terkini
   const [currentMembers, setCurrentMembers] = useState<number>(
     Number(params.members) || 0
   );
 
-  // Kapasitas maksimum kegiatan
-  const maxCapacity = Number(params.maxMembers) || 10;
+  // State status favorit dari local storage
+  const [isFav, setIsFav] = useState<boolean>(params.isFavorite === 'true');
 
-  // Hitung sisa slot kuota secara dinamis
+  // State proses transaksi async
+  const [isJoining, setIsJoining] = useState<boolean>(false);
+
+  const maxCapacity = Number(params.maxMembers) || 10;
   const remainingSlots = Math.max(0, maxCapacity - currentMembers);
 
-  // 4. Hook useEffect untuk memantau perubahan status 'isJoined' (Kriteria Penilaian Modul 2)
+  // Cek status favorit secara asynchronous saat halaman dibuka
   useEffect(() => {
-    if (isJoined) {
-      console.log(`[GatherIn Log] User berhasil bergabung pada kegiatan ID: ${params.id}`);
+    if (params.id) {
+      checkIsFavorite(params.id)
+        .then((favorited) => setIsFav(favorited))
+        .catch((err) => console.log('Gagal memeriksa status favorit:', err));
     }
-  }, [isJoined, params.id]);
+  }, [params.id]);
 
-  // Handler untuk aksi tombol "Gabung Kegiatan"
+  /**
+   * Handler Gabung Kegiatan secara Asynchronous
+   * Memenuhi kriteria penilaian: "Menggunakan fungsi .then(), .resolve(), dan .reject()"
+   */
   const handleToggleJoin = () => {
     if (isJoined) {
       Alert.alert(
-        'Sudah Bergabung',
+        'Sudah Terdaftar',
         'Kamu sudah terdaftar di kegiatan ini. Sampai jumpa di lokasi kumpul!'
       );
       return;
     }
 
-    if (remainingSlots <= 0) {
-      Alert.alert('Kuota Penuh', 'Maaf, kuota kegiatan ini sudah habis.');
-      return;
-    }
+    setIsJoining(true);
 
-    // Update state: kuota peserta bertambah 1 & status berubah jadi Joined
-    setIsJoined(true);
-    setCurrentMembers((prev) => prev + 1);
+    const currentActivity: HobbyData = {
+      id: params.id,
+      name: params.name ?? 'Kegiatan Kumpul',
+      description: params.description ?? '',
+      category: (params.category as HobbyCategory) || 'Olahraga',
+      location: params.location ?? 'Kampus UMM',
+      time: params.time ?? 'Hari ini',
+      members: currentMembers,
+      maxMembers: maxCapacity,
+      host: params.host ?? 'Mahasiswa',
+      isJoined: isJoined,
+    };
 
-    Alert.alert(
-      'Berhasil Bergabung! 🎉',
-      `Selamat! Kamu resmi bergabung dengan "${params.name ?? 'Kegiatan'}". Silakan bersiap dan koordinasi dengan host.`
-    );
+    // Memanggil custom Promise function dengan resolve() dan reject()
+    joinActivityWithPromise(currentActivity)
+      .then((successMsg: string) => {
+        setIsJoined(true);
+        setCurrentMembers((prev) => prev + 1);
+        Alert.alert('Berhasil Bergabung! 🎉', successMsg);
+      })
+      .catch((error: Error) => {
+        Alert.alert('Peringatan Kuota / Join ⚠️', error.message);
+      })
+      .finally(() => {
+        setIsJoining(false);
+      });
   };
 
-  // Handler navigasi kembali yang aman (Safe Navigation dengan router.canGoBack)
+  /**
+   * Handler Toggle Favorit secara Asynchronous
+   */
+  const handleToggleFavorite = async () => {
+    if (!params.id) return;
+    try {
+      const newStatus = await toggleFavorite(params.id);
+      setIsFav(newStatus);
+      Alert.alert(
+        newStatus ? 'Ditambahkan ke Favorit ❤️' : 'Dihapus dari Favorit 🤍',
+        newStatus
+          ? `Kegiatan "${params.name}" telah disimpan ke favorit.`
+          : `Kegiatan "${params.name}" telah dihapus dari favorit.`
+      );
+    } catch {
+      Alert.alert('Kesalahan', 'Gagal memperbarui status favorit.');
+    }
+  };
+
   const handleGoBack = () => {
     if (router.canGoBack()) {
       router.back();
     } else {
-      // Fallback jika halaman dibuka langsung tanpa riwayat navigasi stack
       router.replace('/');
     }
   };
 
-  // Tampilan jika data kegiatan tidak valid / tidak ditemukan
   if (!params.id) {
     return (
       <View style={styles.notFoundContainer}>
-        <Text style={styles.notFoundText}>Kegiatan tidak ditemukan atau parameter kosong.</Text>
+        <Text style={styles.notFoundText}>
+          Kegiatan tidak ditemukan atau parameter kosong.
+        </Text>
         <Pressable
           accessibilityRole="button"
           onPress={handleGoBack}
@@ -99,12 +141,31 @@ export default function DetailActivityScreen() {
           <Pressable
             accessibilityRole="button"
             onPress={handleGoBack}
-            style={({ pressed }) => [styles.backButton, pressed && styles.backButtonPressed]}>
+            style={({ pressed }) => [
+              styles.backButton,
+              pressed && styles.backButtonPressed,
+            ]}>
             <Text style={styles.backButtonText}>← Kembali</Text>
           </Pressable>
 
-          <View style={styles.routeBadge}>
-            <Text style={styles.routeBadgeText}>ID: #{params.id}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={handleToggleFavorite}
+              style={{
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                borderRadius: 12,
+                backgroundColor: '#21262D',
+                borderWidth: 1,
+                borderColor: PALETTE.cardBorder,
+              }}>
+              <Text style={{ fontSize: 13 }}>{isFav ? '❤️ Favorit' : '🤍 Simpan'}</Text>
+            </Pressable>
+
+            <View style={styles.routeBadge}>
+              <Text style={styles.routeBadgeText}>ID: #{params.id}</Text>
+            </View>
           </View>
         </View>
 
@@ -133,7 +194,7 @@ export default function DetailActivityScreen() {
 
             <View style={styles.infoCard}>
               <Text style={styles.infoLabel}>📍 LOKASI KUMPUL</Text>
-              <Text style={styles.infoValue}>{params.location ?? 'Area Kampus'}</Text>
+              <Text style={styles.infoValue}>{params.location ?? 'Area Kampus UMM'}</Text>
             </View>
 
             <View style={styles.infoCard}>
@@ -157,32 +218,36 @@ export default function DetailActivityScreen() {
             </Text>
           </View>
 
-          {/* Tombol Interaktif Gabung Kegiatan */}
+          {/* Tombol Interaktif Gabung Kegiatan (Promise Handling) */}
           <Pressable
             accessibilityRole="button"
             onPress={handleToggleJoin}
-            disabled={isJoined || remainingSlots <= 0}
+            disabled={isJoined || remainingSlots <= 0 || isJoining}
             style={({ pressed }) => [
               styles.joinButton,
               isJoined && styles.joinButtonDisabled,
               remainingSlots <= 0 && !isJoined && styles.joinButtonFull,
               pressed && styles.joinButtonPressed,
             ]}>
-            <Text
-              style={[
-                styles.joinButtonText,
-                isJoined && styles.joinButtonTextDisabled,
-              ]}>
-              {isJoined
-                ? '✓ Sudah Tergabung (Joined)'
-                : remainingSlots <= 0
-                ? 'Slot Kuota Penuh'
-                : 'Gabung Kegiatan Sekarang ↗'}
-            </Text>
+            {isJoining ? (
+              <ActivityIndicator color="#0D1117" size="small" />
+            ) : (
+              <Text
+                style={[
+                  styles.joinButtonText,
+                  isJoined && styles.joinButtonTextDisabled,
+                ]}>
+                {isJoined
+                  ? '✓ Sudah Tergabung (Joined)'
+                  : remainingSlots <= 0
+                  ? 'Slot Kuota Penuh'
+                  : 'Gabung Kegiatan Sekarang (Promise) ↗'}
+              </Text>
+            )}
           </Pressable>
         </View>
 
-        <Text style={styles.footerText}>GATHERIN • MODUL 2 PRAKTIKUM ✦</Text>
+        <Text style={styles.footerText}>GATHERIN • MODUL 3 PRAKTIKUM ✦</Text>
       </ScrollView>
     </View>
   );

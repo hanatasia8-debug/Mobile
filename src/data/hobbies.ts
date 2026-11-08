@@ -1,80 +1,91 @@
-export type HobbyCategory = 'Olahraga' | 'Gaming' | 'Kuliner' | 'Seni';
+import { type HobbyCategory, type HobbyData, type DetailScreenParams } from '@/types/activity';
 
-export interface HobbyData {
-  id: string;
-  name: string;
-  description: string;
-  category: HobbyCategory;
-  location: string;
-  time: string;
-  members: number;
-  maxMembers: number;
-  host: string;
-  isJoined?: boolean;
-}
-
-export type DetailScreenParams = {
-  id: string;
-  name?: string;
-  category?: string;
-  description?: string;
-  location?: string;
-  time?: string;
-  members?: string;
-  maxMembers?: string;
-  host?: string;
-  isJoined?: string;
-  [key: string]: string | string[] | undefined;
-};
+export type { HobbyCategory, HobbyData, DetailScreenParams };
 
 export const hobbies: HobbyData[] = [
   {
-    id: 'basket',
+    id: 'basket-sore',
     name: 'Basket Sore Santai',
-    description: 'Cari teman untuk main basket 3-on-3 santai, semua level boleh ikut tanpa seleksi!',
+    description: 'Cari teman untuk main basket 3-on-3 santai di sore hari, semua level skill boleh gabung tanpa seleksi!',
     category: 'Olahraga',
-    location: 'Lapangan Kampus A',
+    location: 'Lapangan Basket Kampus III UMM',
     time: 'Hari ini, 16.30 WIB',
     members: 4,
     maxMembers: 6,
-    host: 'Rian (Teknik)',
+    host: 'Rian Pratama (Teknik Mesin)',
+    hostAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
     isJoined: false,
+    source: 'local',
   },
   {
-    id: 'boardgame',
+    id: 'boardgame-night',
     name: 'Board Game Night & Chill',
-    description: 'Ngobrol santai sambil main Catan & Werewolf bareng setelah jam kuliah selesai.',
+    description: 'Ngobrol santai sambil main Catan, Exploding Kittens & Werewolf bareng setelah kuliah selesai.',
     category: 'Gaming',
-    location: 'Student Lounge Gd. Bersama',
+    location: 'Student Center Gd. Kuliah Bersama UMM',
     time: 'Hari ini, 19.00 WIB',
-    members: 3,
+    members: 5,
     maxMembers: 8,
-    host: 'Nadia (Sistem Informasi)',
+    host: 'Nadia Putri (Informatika)',
+    hostAvatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150',
     isJoined: false,
+    source: 'local',
   },
   {
-    id: 'coffee',
+    id: 'coffee-study',
     name: 'Jajan Kopi & Co-Working',
-    description: 'Jelajahi kedai kopi baru di sekitar kampus sambil nugas bareng.',
+    description: 'Jelajahi coffee shop sekitar kampus sambil nugas bareng dan tukar insight pemrograman.',
     category: 'Kuliner',
-    location: 'Kopi Kenari Dekat Gerbang Utama',
+    location: 'Kopi Titik Koma Dekat Kampus',
     time: 'Besok, 10.00 WIB',
     members: 2,
     maxMembers: 5,
-    host: 'Faris (Informatika)',
+    host: 'Faris Al-Fatih (Teknik Elektro)',
+    hostAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
     isJoined: false,
+    source: 'local',
   },
   {
-    id: 'sketch',
+    id: 'sketch-art',
     name: 'Sketching & Sharing Portofolio',
-    description: 'Bawa sketchbook atau tablet menggambar, bebas explore ide visual baru.',
+    description: 'Bawa sketchbook atau tablet ilustrasi, bebas explore ide visual baru dan sharing karya desain.',
     category: 'Seni',
-    location: 'Taman Fakultas Sastra',
+    location: 'Taman Gazebo Danau Kampus III',
     time: 'Besok, 15.30 WIB',
-    members: 5,
-    maxMembers: 10,
-    host: 'Alya (DKV)',
+    members: 3,
+    maxMembers: 6,
+    host: 'Alya Maharani (DKV)',
+    hostAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
     isJoined: false,
+    source: 'local',
+  },
+  {
+    id: 'hackathon-jam',
+    name: 'Weekend Mini Coding Jam',
+    description: 'Bikin prototype app seru menggunakan React Native & Expo bareng anak-anak lab!',
+    category: 'Teknologi',
+    location: 'Lab Komputasi Dasar LabTI UMM',
+    time: 'Sabtu, 09.00 WIB',
+    members: 4,
+    maxMembers: 8,
+    host: 'Dimas Wijaya (Informatika)',
+    hostAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+    isJoined: false,
+    source: 'local',
+  },
+  {
+    id: 'badminton-party',
+    name: 'Badminton Ganda Ria',
+    description: 'Main bulutangkis santai cari keringat, raket cadangan disediakan oleh panitia.',
+    category: 'Olahraga',
+    location: 'GOR Indoor UMM',
+    time: 'Minggu, 08.00 WIB',
+    members: 3,
+    maxMembers: 4,
+    host: 'Bayu Nugroho (Fisip)',
+    hostAvatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150',
+    isJoined: false,
+    source: 'local',
   },
 ];
 
@@ -84,5 +95,5 @@ export const categoryOptions: (HobbyCategory | 'Semua')[] = [
   'Gaming',
   'Kuliner',
   'Seni',
+  'Teknologi',
 ];
-
