@@ -1,56 +1,56 @@
-# Welcome to your Expo app 👋
+# GatherIn 📱 — Aplikasi Komunitas & Kumpul Mahasiswa
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplikasi mobile berbasis **React Native (Expo SDK 58 + Expo Router)** dengan integrasi basis data **Supabase PostgreSQL** dan sistem autentikasi terenkripsi.
 
-## Get started
+---
 
-1. Install dependencies
+## 🚀 Fitur Praktikum (Modul 1 – 4)
 
-   ```bash
-   npm install
-   ```
+### Modul 1 & 2: Desain Komponen & Routing Dinamis
+- **File-based Routing**: Menggunakan Expo Router (`src/app/`).
+- **Dynamic Route**: Halaman detail dinamis (`src/app/detail/[id].tsx`).
+- **Komponen Modular**: `ActivityCard`, `StatCard`, `Loading`, `ErrorMessage`, `CommunityHostCard`, dan `DiscussionCard`.
 
-2. Start the app
+### Modul 3: Pemrograman Asynchronous, State & Storage
+- **Local Storage**: Penyimpanan daftar kegiatan favorit secara persisten menggunakan `AsyncStorage`.
+- **Custom Promise**: Validasi kuota dan join kegiatan menggunakan Promise constructor (`new Promise`), method `.then()`, `.resolve()`, dan `.reject()`.
+- **External API Fetch**: Pengambilan data host dan topik forum dari API eksternal (dummyjson).
 
-   ```bash
-   npx expo start
-   ```
+### Modul 4: Database Cloud & Autentikasi Supabase
+- **Secure Token Storage**: Singleton Supabase Client dengan `ExpoSecureStoreAdapter` (`expo-secure-store`) untuk enkripsi token sesi pada iOS (Keychain) dan Android (Keystore).
+- **Global AuthContext**: Manajemen sesi global dengan real-time subscription (`supabase.auth.onAuthStateChange`).
+- **Route Protection Guards**: Proteksi rute otomatis dengan Expo Router (`useSegments()`). Loading state terpusat untuk mencegah *layout flicker*.
+- **Mobile UX Form**: Input sanitization `.trim()`, keyboard email, pencegahan multiple submission saat loading, dan penanganan error Supabase.
+- **Cloud Database CRUD (RLS)**: Operasi `SELECT`, `INSERT`, `UPDATE`, dan `DELETE` pada tabel `gatherings` dengan **Row Level Security** (`auth.uid() = user_id`).
+- **Optimistic UI & Pull-to-Refresh**: Respon instan pada UI saat membuat/mengubah/menghapus ajakan dengan mekanisme *rollback* otomatis jika request jaringan gagal.
 
-In the output, you'll find options to open the app in a
+---
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 🛠️ Panduan Instalasi & Menjalankan Proyek
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
+### 1. Clone & Instal Dependensi
 ```bash
-npm run reset-project
+git clone https://github.com/hanatasia8-debug/Mobile.git
+cd Mobile
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 2. Konfigurasi Environment Variable
+Salin file `.env.example` menjadi `.env`:
+```bash
+cp .env.example .env
+```
+Isi variabel dengan kredensial Supabase Anda:
+```env
+EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+EXPO_PUBLIC_SUPABASE_KEY=your-anon-key
+```
 
-### Other setup steps
+### 3. Eksekusi Skrip Database
+Buka **Supabase SQL Editor** dan jalankan seluruh query yang ada di file [`supabase_schema.sql`](./supabase_schema.sql) untuk membuat tabel `gatherings` dan kebijakan RLS.
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### 4. Jalankan Aplikasi di Expo Go
+```bash
+npx expo start --go
+```
+Scan QR code menggunakan aplikasi **Expo Go** pada perangkat Android atau iOS.
